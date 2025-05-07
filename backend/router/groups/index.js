@@ -6,7 +6,7 @@ const yup = require("yup");
 const router = Router();
 
 const groupTemplate = yup.object().shape({
-  name: yup.string().min(5, "A megadott név nem elég hosszú!").max(30, "A megadott név túl hosszú!").required("A név megadása kötelező"),
+  name: yup.string().min(2, "A megadott név nem elég hosszú!").max(30, "A megadott név túl hosszú!").required("A név megadása kötelező"),
   permission: yup.number().min(0, "A jogosultság kisebb mint 0").max(9, "A jogosultság nem lehet nagyobb mint 9"),
   enterTimeRange: yup.string().min(4, "A enterTimeRange nem elég hosszú!").max(16, "A enterTimeRange túl hosszú!").required("A enterTimeRange megadása kötelező"),
   exitTimeRange: yup.string().min(4, "A exitTimeRange nem elég hosszú!").max(16, "A exitTimeRange túl hosszú!").required("A exitTimeRange megadása kötelező"),
