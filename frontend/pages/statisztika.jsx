@@ -6,17 +6,19 @@ import dynamic from "next/dynamic";
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
 const dataBelepes = [
-    { name: "Jan", value: 303 },
-    { name: "Feb", value: 250 },
-    { name: "Már", value: 400 },
-    { name: "Ápr", value: 350 },
+    { name: "Jan", value: 2 },
+    { name: "Feb", value: 2 },
+    { name: "Már", value: 2 },
+    { name: "Ápr", value: 2 },
+    { name: "Máj", value: 3 },
 ];
 
 const dataKilepes = [
-    { name: "Jan", value: 200 },
-    { name: "Feb", value: 180 },
-    { name: "Már", value: 300 },
-    { name: "Ápr", value: 280 },
+    { name: "Jan", value: 2 },
+    { name: "Feb", value: 2 },
+    { name: "Már", value: 2 },
+    { name: "Ápr", value: 2 },
+    { name: "Máj", value: 3 },
 ];
 
 export default function Statisztika() {
