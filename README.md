@@ -28,6 +28,8 @@ cd sign-ey
 
 **Importáld be MySQL adatbázisba az alábbi adatok.sql fájlt**
 
+># A backend elindításához avagy müködéséhez szükség lesz egy RFID olvasóhoz mivel a hardver nélkül így funkció képtelen lesz.
+
 Telepítsd a szükséges szoftverek aztán indítsd el a szervereket:
 
 ```bash
