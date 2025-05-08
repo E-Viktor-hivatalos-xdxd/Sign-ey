@@ -6,9 +6,9 @@ A Sign-ey egy iskolai beléptető rendszer mely megkönnyebíti a diákok/tanár
 
 ## Dokumentáció
 
-[Dokumentáció](/dokumentumok/Sign-ey Dokumentáció.pdf)
+[Dokumentáció](/dokumentumok/Sign-ey-Dokumentáció.pdf)
 
-[Használati útmutató](/dokumentumok/Sign-ey használati útmutató.pdf)
+[Használati útmutató](/dokumentumok/Sign-ey-használati-útmutató.pdf)
 
 ## Telepítési követelmények
 
