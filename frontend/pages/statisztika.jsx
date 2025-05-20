@@ -1,7 +1,9 @@
-import { Circle } from "@phosphor-icons/react";
-import { UserSquare } from "@phosphor-icons/react/dist/ssr";
 import React, { useState } from "react";
 import dynamic from "next/dynamic";
+import Nav from "@/components/Nav";
+import Login from "@/components/Login";
+import moment from "moment";
+import "moment/locale/hu";
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
@@ -21,14 +23,27 @@ const dataKilepes = [
     { name: "Máj", value: 3 },
 ];
 
-export default function Statisztika() {
+export default function Statisztika({ user, logs }) {
+
+    moment.locale("hu");
+
+    const groups = Object.groupBy(logs, (log) => log?.User?.Group?.name
+    );
+    var groupNames = Object.keys(groups)
+
     const [pieState, setPieState] = useState({
-        series: [40, 30, 30],
+        series: groupNames.map(name => {
+            return groups[name]?.length
+        }),
         options: {
             chart: {
                 type: "pie",
             },
-            labels: ["9A", "10D", "13DC"],
+            labels: groupNames.map(name => {
+                if (name == "undefined") {
+                    return "Manuális"
+                } else return name
+            }),
             responsive: [
                 {
                     breakpoint: 480,
@@ -45,15 +60,23 @@ export default function Statisztika() {
         },
     });
 
+    const entry = Object.groupBy(logs?.filter(l => l?.entryTime != null), (log) => new Date(log?.entryTime).getMonth());
+    const exit = Object.groupBy(logs?.filter(l => l?.exitTime != null), (log) => new Date(log?.exitTime).getMonth());
+
     const [barState, setBarState] = useState({
         series: [
+
             {
                 name: "Belépések",
-                data: dataBelepes.map((item) => item.value),
+                data: Object.keys(entry)?.map(e => {
+                    return entry[e]?.length
+                })
             },
             {
                 name: "Kilépések",
-                data: dataKilepes.map((item) => item.value),
+                data: Object.keys(exit)?.map(e => {
+                    return exit[e]?.length
+                })
             },
         ],
         options: {
@@ -77,7 +100,9 @@ export default function Statisztika() {
                 colors: ["transparent"],
             },
             xaxis: {
-                categories: dataBelepes.map((item) => item.name),
+                categories: Object.keys(exit)?.map(e => {
+                    return moment().month(e).startOf("month").format('MMMM')
+                }),
             },
             yaxis: {
                 title: {
@@ -95,46 +120,52 @@ export default function Statisztika() {
         },
     });
 
+    if (user == null) return <Login />;
     return (
-        <div className="min-h-screen bg-gray-100">
-            {/* Navigáció */}
-            <nav className="bg-blue-500 m-10 p-5 rounded-4xl flex flex-col md:flex-row gap-y-10 items-center justify-between text-white text-xl font-medium italic">
-                <div className="flex items-center">
-                    <img src="/logo.png" className="w-16 mr-2.5" alt="Sign-ey logó" />
-                    <a href="/" className="text-white">
-                        Sign-ey
-                    </a>
+        <div className="bg-gray-100">
+            <Nav user={user} />
+
+                {/* Tartalom */}
+                <div className="m-10 grid grid-cols-1 md:grid-cols-2 gap-10">
+                    {/* Kördiagram */}
+                    <div className="bg-white p-6 rounded-4xl shadow-lg">
+                        <h2 className="text-xl font-bold text-gray-700 mb-4">Osztályok aránya</h2>
+                        <Chart options={pieState.options} series={pieState.series} type="pie" width="100%" />
+                    </div>
+
+                    {/* Oszlopdiagram */}
+                    <div className="bg-white p-6 rounded-4xl shadow-lg">
+                        <h2 className="text-xl font-bold text-gray-700 mb-4">Belépések és Kilépések</h2>
+                        <Chart options={barState.options} series={barState.series} type="bar" height={350} />
+                    </div>
                 </div>
 
-                <a href="/" className="text-white">
-                    Kezdőlap
-                </a>
-                <a href="/naplo" className="hover:text-white/60 transition duration-150">
-                    Napló
-                </a>
-                <a href="/statisztika" className="hover:text-white/60 transition duration-150">
-                    Statisztika
-                </a>
-                <a href="/felhasznalok" className="hover:text-white/60 transition duration-150">
-                    Felhasználók
-                </a>
-                <UserSquare size={60} className="text-white" weight="bold" />
-            </nav>
-
-            {/* Tartalom */}
-            <div className="m-10 grid grid-cols-1 md:grid-cols-2 gap-10">
-                {/* Kördiagram */}
-                <div className="bg-white p-6 rounded-4xl shadow-lg">
-                    <h2 className="text-xl font-bold text-gray-700 mb-4">Osztályok aránya</h2>
-                    <Chart options={pieState.options} series={pieState.series} type="pie" width="100%" />
-                </div>
-
-                {/* Oszlopdiagram */}
-                <div className="bg-white p-6 rounded-4xl shadow-lg">
-                    <h2 className="text-xl font-bold text-gray-700 mb-4">Belépések és Kilépések</h2>
-                    <Chart options={barState.options} series={barState.series} type="bar" height={350} />
-                </div>
-            </div>
         </div>
     );
+}
+
+
+
+
+export async function getServerSideProps(ctx) {
+    const cookie = ctx.req.headers?.cookie;
+
+    const res = await fetch(`http://127.0.0.1:8080/api/user`, {
+        headers: { cookie },
+    });
+    const user = res.ok ? await res.json() : null;
+
+
+    const res2 = await fetch(`http://127.0.0.1:8080/api/logs?limit=200`, {
+        headers: { cookie },
+    });
+    const logs = res2.ok ? await res2.json() : null;
+
+    return {
+        props: {
+            logs: logs,
+            user: user
+        },
+
+    };
 }

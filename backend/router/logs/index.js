@@ -1,12 +1,12 @@
 //Imports
 const { Router } = require("express");
-const { User, Log, sequelize } = require("../../schema");
+const { User, Log, sequelize, Group } = require("../../schema");
 const { Op } = require("sequelize");
 
 const router = Router();
 //TODO: fix for new DB
 router.get("/", require("../../middleware/user"), async (req, res) => {
-  const { userID, groupID, manual, fromDate, toDate } = req.body;
+  const { userID, groupID, manual, fromDate, toDate, limit } = req.query
 
   const logs = await Log.findAll({
     where: {
@@ -35,14 +35,22 @@ router.get("/", require("../../middleware/user"), async (req, res) => {
     },
 
 
-    limit: 25,
+    limit: req.query.limit ? parseInt(limit) : 25,
     include: [
       {
         model: User,
         attributes: ["groupID", "name", "email", "cardNumber"],
+
+        include: [
+          {
+            model: Group,
+            attributes: ["name"],
+          },
+        ],
+
         ...groupID != undefined && {
           where: {
-            groupID: groupID
+            groupID: groupID,
           }
         }
       },

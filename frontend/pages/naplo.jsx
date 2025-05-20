@@ -12,7 +12,6 @@ export default function Dashboard({ user, logs }) {
 
   moment.locale("hu");
 
-
   const status = {
     OPEN: <Check size={32} />,
     CLOSE: <X size={32} />,
@@ -25,10 +24,8 @@ export default function Dashboard({ user, logs }) {
       <title>Sign-ey</title>
       <div className="px-10">
 
-        
-
-        <div className="flex gap-5 my-10">
-          {router.query?.userID && <p className="py-2 px-4 bg-blue-500 text-white rounded-full flex items-center gap-x-2">
+        <div className="flex gap-5">
+          {router.query?.userID && <p className="py-2 px-4 bg-blue-500 text-white rounded-full flex items-center gap-x-2 mb-10">
             Szürő:
 
             <span className="font-semibold">{logs[0]?.User?.name} </span>
@@ -39,7 +36,7 @@ export default function Dashboard({ user, logs }) {
           </p>}
 
 
-          {router.query?.groupID && <p className="py-2 px-4 bg-blue-500 text-white rounded-full flex items-center gap-x-2">
+          {router.query?.groupID && <p className="py-2 px-4 bg-blue-500 text-white rounded-full flex items-center gap-x-2 mb-10">
             Szürő:
 
             <span className="font-semibold">{logs[0]?.User?.Group?.name} </span>
@@ -107,7 +104,8 @@ export default function Dashboard({ user, logs }) {
 
                   </td>
 
-                  <td className="px-6 py-4 whitespace-nowrap ">{status[log?.action]}</td>
+                  <td className="px-6 py-4 whitespace-nowrap ">{status[log?.action]}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap"
 
 
@@ -125,6 +123,7 @@ export default function Dashboard({ user, logs }) {
             </tbody>
           </table>
 
+
         </div>
       </div>
     </div>
@@ -140,6 +139,7 @@ export async function getServerSideProps(ctx) {
   const user = res.ok ? await res.json() : null;
 
   const { userID, groupID, } = ctx.query;
+
 
   const res2 = await fetch(`http://127.0.0.1:8080/api/logs?${userID && "&userID=" + userID}${groupID && "&groupID=" + groupID + ""}
     }`, {

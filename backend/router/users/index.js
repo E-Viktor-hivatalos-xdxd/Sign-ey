@@ -8,14 +8,25 @@ const router = Router();
 //TODO: fix for new DB
 router.get("/", require("../../middleware/user"), async (req, res) => { /* ÖSSZES FELHASZNÁLÓ LEKÉRDEZÉSE */
   const users = await User.findAll({
+    include: [
+      {
+        model: Group,
+        attributes: ["name"]
+      }
+    ]
   });
 
   return res.send(users.map(u => {
     const user = {
       userID: u.userID,
       name: u.name,
+      email: u.email,
       cardNumber: u.cardNumber,
-      groupID: u.groupID
+      Group: {
+        name: u?.Group?.name,
+        groupID: u.groupID,
+
+      }
     }
     return user
   }))
@@ -106,7 +117,7 @@ router.delete("/:userID", require("../../middleware/user"), async (req, res) => 
 
 router.put("/:userID", require("../../middleware/user"), async (req, res) => {  /* FELHASZNÁLÓ FRISSÍTÉSE */
   const userIDparam = req.params.userID
-  const {  email, password, name, phone} = req.body;
+  const { email, password, name, phone } = req.body;
   const user = await User.findOne({
     where: {
       userID: userIDparam
@@ -115,22 +126,22 @@ router.put("/:userID", require("../../middleware/user"), async (req, res) => {  
 
   if (!user) return res.send({ status: "Nem található" })
 
-    if(email != undefined){
-      user.email = email
-    }
+  if (email != undefined) {
+    user.email = email
+  }
 
-    if(password != undefined) {
-      user.password = password
+  if (password != undefined) {
+    user.password = password
 
-    }
+  }
 
-    if(name != undefined){
-      user.name = name
-    }
+  if (name != undefined) {
+    user.name = name
+  }
 
-    if(phone != undefined){
-      user.phone = phone
-    }
+  if (phone != undefined) {
+    user.phone = phone
+  }
 
 
 
@@ -139,7 +150,7 @@ router.put("/:userID", require("../../middleware/user"), async (req, res) => {  
   })
 })
 
-const {parser} = require("../../Serial")
+const { parser } = require("../../Serial")
 
 router.post("/:userID/setCard", require("../../middleware/user"), async (req, res) => { /* KÁRTYA HOZZÁRENDELÉSE */
   const userIDparam = req.params.userID
@@ -148,37 +159,37 @@ router.post("/:userID/setCard", require("../../middleware/user"), async (req, re
     return res.status(400).send({ error: "Hiányzó paraméterek" });
 
 
-  req.setTimeout(15000, ()=>{
-    return res.send({error: "Hiba az olvasás során"})
+  req.setTimeout(15000, () => {
+    return res.send({ error: "Hiba az olvasás során" })
   })
-     parser?.once("data", async (data) => {
-      const kod = data.replace("KOD:", "")
-      const user = await User.findOne({
-        where: {
-          cardNumber: kod.replace("\r", "")
-        },
-  
-      });
-  
-      if (user) return res.status(400).send({ error: "Ez a kártyaszám már foglalt" });
-        const targetUser = await User.findOne({
-          where: {
-            userID: userIDparam,
-          },
-    
-        });
-        if (!targetUser) return res.status(404).send({ error: "Ez a felhasználó nem található" });
-          
-          targetUser.cardNumber = kod.replace("\r", "")
-          targetUser.save()
-          return res.status(200).send({ status: "Kártya hozzáadva" });
-    })
+  parser?.once("data", async (data) => {
+    const kod = data.replace("KOD:", "")
+    const user = await User.findOne({
+      where: {
+        cardNumber: kod.replace("\r", "")
+      },
+
+    });
+
+    if (user) return res.status(400).send({ error: "Ez a kártyaszám már foglalt" });
+    const targetUser = await User.findOne({
+      where: {
+        userID: userIDparam,
+      },
+
+    });
+    if (!targetUser) return res.status(404).send({ error: "Ez a felhasználó nem található" });
+
+    targetUser.cardNumber = kod.replace("\r", "")
+    targetUser.save()
+    return res.status(200).send({ status: "Kártya hozzáadva" });
+  })
 });
 
 router.post("/:userID/addGroup", require("../../middleware/user"), async (req, res) => { /* KÁRTYA HOZZÁRENDELÉSE */
   const userIDparam = req.params.userID
   const { groupID } = req.body;
-  
+
   if (!userIDparam || !groupID) return res.status(400).send({ error: "Hiányzó paraméterek" });
 
   const group = await Group.findOne({
@@ -188,27 +199,27 @@ router.post("/:userID/addGroup", require("../../middleware/user"), async (req, r
   });
   if (!group) return res.status(404).send({ error: "Csoport nem létezik" })
 
-    const user = await User.findOne({
-      where: {
-        userID: userIDparam
-      },
-    });
-    if (!user) return res.status(404).send({ error: "Felhasználó nem létezik" })
+  const user = await User.findOne({
+    where: {
+      userID: userIDparam
+    },
+  });
+  if (!user) return res.status(404).send({ error: "Felhasználó nem létezik" })
 
-      if(user?.groupID) return res.status(400).send({ error: "Felhasználó már része egy csoportnak" })
-      
+  if (user?.groupID) return res.status(400).send({ error: "Felhasználó már része egy csoportnak" })
 
-        user.groupID=group.groupID
-        user.save().then(() => {
-          return res.send({ status: "Felhasználó hozzá adva a csoporthoz" })
-        })
+
+  user.groupID = group.groupID
+  user.save().then(() => {
+    return res.send({ status: "Felhasználó hozzá adva a csoporthoz" })
+  })
 });
 
 
 router.post("/:userID/removeGroup", require("../../middleware/user"), async (req, res) => { /* KÁRTYA HOZZÁRENDELÉSE */
   const userIDparam = req.params.userID
   const { groupID } = req.body;
-  
+
   if (!userIDparam || !groupID) return res.status(400).send({ error: "Hiányzó paraméterek" });
 
   const group = await Group.findOne({
@@ -218,20 +229,20 @@ router.post("/:userID/removeGroup", require("../../middleware/user"), async (req
   });
   if (!group) return res.status(404).send({ error: "Csoport nem létezik" })
 
-    const user = await User.findOne({
-      where: {
-        userID: userIDparam
-      },
-    });
-    if (!user) return res.status(404).send({ error: "Felhasználó nem létezik" })
+  const user = await User.findOne({
+    where: {
+      userID: userIDparam
+    },
+  });
+  if (!user) return res.status(404).send({ error: "Felhasználó nem létezik" })
 
-      if(!user?.groupID) return res.status(400).send({ error: "Felhasználó nem része csoportnak" })
-      
+  if (!user?.groupID) return res.status(400).send({ error: "Felhasználó nem része csoportnak" })
 
-        user.groupID=null
-        user.save().then(() => {
-          return res.send({ status: "Felhasználó törölve a csoportból" })
-        })
+
+  user.groupID = null
+  user.save().then(() => {
+    return res.send({ status: "Felhasználó törölve a csoportból" })
+  })
 });
 
 

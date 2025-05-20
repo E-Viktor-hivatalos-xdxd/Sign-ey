@@ -1,6 +1,6 @@
 import Nav from "@/components/Nav";
 import Login from "@/components/Login";
-import { Check, Clock, IdentificationCard, LockKeyOpen, SignIn, SignOut, UserSquare, WarningDiamond, X } from "@phosphor-icons/react/dist/ssr";
+import { Check, Clock, IdentificationCard, LockKey, LockKeyOpen, SignIn, SignOut, UserSquare, WarningDiamond, X } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { useState } from "react";
 import moment from "moment";
@@ -16,12 +16,39 @@ export default function Home({ user, logs }) {
   setInterval(UpdateTime)
 
 
-    const status = {
-      OPEN: <Check size={32} />,
-      CLOSE: <X size={32} />,
-    }
-  
+  const status = {
+    OPEN: <Check size={32} />,
+    CLOSE: <X size={32} />,
+  }
+
   if (user == null) return <Login />;
+
+  function action(parameter) {
+    const statusMessage = {
+      OPEN: "nyitás",
+      CLOSE: "zárás"
+    }
+    fetch("http://127.0.0.1:8080/api//door/", {
+
+      method: "POST",
+      redirect: "follow",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        action: parameter
+      }),
+    })
+      .then((response) => response.json())
+      .then((result) => {
+        if (res?.succes) {
+          alert("Sikeres " + statusMessage[parameter])
+        } else {
+          alert("Sikertelen " + statusMessage[parameter])
+        }
+      })
+  }
 
   return (
     <div className="max-h-screen overflow-hidden">
@@ -40,21 +67,33 @@ export default function Home({ user, logs }) {
         </div>
 
         <div className="flex flex-col gap-5 w-full">
-          <button className="hover:bg-black flex items-center py-2.5 px-4 hover:text-white text-xl rounded-xl border-[3px] border-black">
+          <button className="hover:bg-black flex items-center py-2.5 px-4 hover:text-white text-xl rounded-xl border-[3px] border-black cursor-pointer"
+            onClick={() => {
+              action("OPEN")
+            }}
+          >
             <LockKeyOpen size={32} weight="bold" />
-            <span className="pl-4 font-semibold">Azonnali nyitás</span>
+            <span className="pl-4 font-semibold">Nyitás</span>
           </button>
-          <button className="hover:bg-black flex items-center py-2.5 px-4 hover:text-white text-xl rounded-xl border-[3px] border-black">
+
+          <button className="hover:bg-black flex items-center py-2.5 px-4 hover:text-white text-xl rounded-xl border-[3px] border-black  cursor-pointer"
+            onClick={() => {
+              action("CLOSE")
+            }}
+          >
+            <LockKey size={32} weight="bold" />
+            <span className="pl-4 font-semibold">Zárás</span>
+          </button>
+          <Link href={"/felhasznalok"} className="hover:bg-black flex items-center py-2.5 px-4 hover:text-white text-xl rounded-xl border-[3px] border-black  cursor-pointer">
             <IdentificationCard size={32} weight="bold" />
 
             <span className="pl-4 font-semibold">Kártya hozzáadása</span>
-          </button>
-          <button className="hover:bg-black flex items-center py-2.5 px-4 hover:text-white text-xl rounded-xl border-[3px] border-black">
-            <Clock size={32} weight="bold" />
-            <span className="pl-4 font-semibold">Időzítés</span>
+          </Link>
 
-          </button>
-          <button className="hover:bg-black flex items-center py-2.5 px-4 hover:text-white text-xl rounded-xl border-[3px] border-black">
+          <button className="hover:bg-black flex items-center py-2.5 px-4 hover:text-white text-xl rounded-xl border-[3px] border-black  cursor-pointer"
+            onClick={() => {
+              action("OPEN")
+            }}>
             <WarningDiamond size={32} weight="bold" />
             <span className="pl-4 font-semibold">Vészhelyzet</span>
 
